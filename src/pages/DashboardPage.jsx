@@ -50,8 +50,6 @@ function DashboardPage() {
       }}> 
 
       <h1>CycleScope Dashboard</h1>
-
-      <Link to="/calendar">Go to Calendar</Link>
       
       <div
         style={{

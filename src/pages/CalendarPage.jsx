@@ -1,5 +1,6 @@
 import { getCycleInfo } from "../utils/cycleUtils";
 import { phaseInfo } from "../data/phaseInfo";
+import { useState } from "react";
 
 function CalendarPage() {
     const savedData = localStorage.getItem("cycleData");
@@ -20,6 +21,18 @@ function CalendarPage() {
     // Generate array of days
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
+    const [selectedDate, setSelectedDate] = useState(null);
+
+    const [events, setEvents] = useState(() => {
+    const saved = localStorage.getItem("calendarEvents");
+        return saved ? JSON.parse(saved) : {};
+    });
+    const [newEvent, setNewEvent] = useState("");
+
+    const [editingIndex, setEditingIndex] = useState(null);
+    const [editText, setEditText] = useState("");
+    
+
     function getPhaseColor(phase) {
         switch (phase) {
             case "Menstrual":
@@ -35,39 +48,335 @@ function CalendarPage() {
         }
     }
 
+  
+    function handleAddEvent() {
+        if (!newEvent || !selectedDate) return;
+
+        const key = selectedDate.toDateString();
+
+        const updatedEvents = {
+            ...events,
+            [key]: [...(events[key] || []), newEvent],
+        };
+
+        setEvents(updatedEvents);
+        localStorage.setItem("calendarEvents", JSON.stringify(updatedEvents));
+        setNewEvent("");
+    }
+   
+    function handleDeleteEvent(index) {
+        const key = selectedDate.toDateString();
+
+        const updatedEvents = {
+            ...events,
+            [key]: events[key].filter((_, i) => i !== index),
+        };
+
+        setEvents(updatedEvents);
+        localStorage.setItem("calendarEvents", JSON.stringify(updatedEvents));
+    }
+
+    function handleEditEvent(index) {
+        const key = selectedDate.toDateString();
+
+        const updatedEvents = [...events[key]];
+        updatedEvents[index] = editText;
+
+        const newEvents = {
+            ...events,
+            [key]: updatedEvents,
+        };
+
+        setEvents(newEvents);
+        localStorage.setItem("calendarEvents", JSON.stringify(newEvents));
+
+        setEditingIndex(null);
+        setEditText("");
+    }
+    
+
     return (
     <div style={{ padding: "2rem" }}>
         <h1>Calendar</h1>
 
+        {/* TOP SECTION */}
         <div
             style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(7, 1fr)",
-                gap: "10px",
-                marginTop: "1.5rem"
+                display: "flex",
+                gap: "2rem",
+                alignItems: "flex-start",
+                marginTop: "1.5rem",
+                flexWrap: "wrap"
             }}
         >
-        {days.map((day) => {
-            const date = new Date(year, month, day);
-            const { phase } = getCycleInfo(cycleData, date);
 
-            return (
+            {/* Calendar */}
+            <div style={{ flex: "3" }}>
                 <div
-                    key={day}
                     style={{
-                        padding: "10px",
-                        borderRadius: "8px",
-                        textAlign: "center",
-                        background: getPhaseColor(phase)
+                        display: "grid",
+                        gridTemplateColumns: "repeat(7, 1fr)",
+                        gap: "10px",
+                        marginTop: "1.5rem"
                     }}
                 >
-                    <strong>{day}</strong>
-                    <div style={{ fontSize: "0.8rem" }}>{phase}</div>
+                    {days.map((day) => {
+                        const date = new Date(year, month, day);
+                        const { phase } = getCycleInfo(cycleData, date);
+                        const isSelected =
+                            selectedDate &&
+                            selectedDate.toDateString() === date.toDateString();
+                        const dateKey = date.toDateString();
+                        const dayEvents = events[dateKey] || [];
 
+                        return (
+                            <div
+                                key={day}
+                                onClick={() => setSelectedDate(date)}   
+                                style={{
+                                    cursor: "pointer",
+                                    padding: "10px",
+                                    borderRadius: "8px",
+                                    textAlign: "center",
+                                    background: getPhaseColor(phase),
+                                    border: isSelected ? "2px solid black" : "none"
+                                }}
+                                
+                            >
+                                <strong>{day}</strong>
+                                <div style={{ fontSize: "0.8rem" }}>{phase}</div>
+
+                                <ul style={{ marginTop: "5px", padding: 0, listStyle: "none", fontSize: "0.7rem" }}>
+                                    {dayEvents.slice(0, 2).map((event, i) => (
+                                        <li key={i}>• {event}</li>
+                                    ))}
+                                    {dayEvents.length > 2 && <li>...</li>}
+                                </ul>
+                            </div>
+                        );
+                    })}
                 </div>
-            );
-        })}
-      </div>
+            </div>
+
+            {/* Task Panel */}
+
+            <div
+                style={{
+                    flex: "0.8",
+                    minWidth: "250px",
+                    background: "#f9fafb",
+                    padding: "1rem",
+                    borderRadius: "12px"
+                }}
+            >
+                {selectedDate && (
+                    <div style={{ marginTop: "2rem", padding: "1rem", background: "#f9fafb", borderRadius: "12px" }}>
+                        <h2>{selectedDate.toDateString()}</h2>
+
+                        <div
+                            style={{
+                            display: "flex",
+                            gap: "8px",
+                            marginTop: "1rem"
+                            }}
+                        >
+                            <input
+                                value={newEvent}
+                                onChange={(e) => setNewEvent(e.target.value)}
+                                placeholder="Add a task..."
+                                style={{
+                                    flex: 1,
+                                    padding: "0.5rem",
+                                    borderRadius: "6px",
+                                    border: "1px solid #ccc"
+                                }}
+                            />
+
+                            <button
+                                onClick={handleAddEvent}
+                                style={{
+                                    border: "none",
+                                    background: "#e2e8f0",
+                                    borderRadius: "6px",
+                                    padding: "0 12px",
+                                    cursor: "pointer",
+                                    flexShrink: 0
+                                }}
+                            >
+                                Add
+                            </button>
+                        </div>
+
+                        <ul 
+                            style={{ 
+                                marginTop: "1rem",
+                                padding: 0,
+                                listStyle: "none"
+                            }}
+                        >
+                            {(events[selectedDate.toDateString()] || []).map((event, i) => (
+                                <li
+                                    key={i}
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "flex-start",
+                                        gap: "10px",
+                                        marginBottom: "10px",
+                                        padding: "8px",
+                                        background: "white",
+                                        borderRadius: "8px"
+                                    }}
+                                >
+                                    {editingIndex === i ? (
+                                        <>
+                                            <input
+                                                value={editText}
+                                                onChange={(e) => setEditText(e.target.value)}
+                                                style={{
+                                                    flex: 1,
+                                                    minWidth: 0,
+                                                    padding: "0.5rem",
+                                                    borderRadius: "6px",
+                                                    border: "1px solid #cbd5e1",
+                                                    fontSize: "0.9rem"
+                                                }}
+                                            />
+
+                                            <div
+                                                style={{
+                                                    display: "flex",
+                                                    gap: "5px",
+                                                    flexShrink: 0
+                                                }}
+                                            >
+                                                <button
+                                                    onClick={() => handleEditEvent(i)}
+                                                    style={{
+                                                        border: "none",
+                                                        background: "#dbeafe",
+                                                        borderRadius: "6px",
+                                                        cursor: "pointer",
+                                                        padding: "6px 10px",
+                                                        fontSize: "0.85rem"
+                                                    }}
+                                                >
+                                                    Save
+                                                </button>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            {/* TEXT */}
+                                            <span
+                                                style={{
+                                                    flex: 1,
+                                                    wordBreak: "break-word",
+                                                    fontSize: "0.9rem"
+                                                }}
+                                            >
+                                                {event}
+                                            </span>
+
+                                            {/* BUTTONS */}
+                                            <div
+                                                style={{
+                                                    display: "flex",
+                                                    gap: "5px",
+                                                    flexShrink: 0
+                                                }}
+                                            >
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingIndex(i);
+                                                        setEditText(event);
+                                                    }}
+                                                    style={{
+                                                        border: "none",
+                                                        background: "#f1f5f9",
+                                                        borderRadius: "6px",
+                                                        cursor: "pointer",
+                                                        padding: "4px 6px"
+                                                    }}
+                                                >
+                                                    ✎
+                                                </button>
+
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteEvent(i);
+                                                    }}
+                                                    style={{
+                                                        border: "none",
+                                                        background: "#f1f5f9",
+                                                        borderRadius: "6px",
+                                                        cursor: "pointer",
+                                                        padding: "4px 6px"
+                                                    }}
+                                                >
+                                                    ×
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+            </div>
+        </div>
+
+        <div
+            style={{
+                marginTop: "2rem",
+                padding: "1.5rem",
+                background: "#f8fafc",
+                borderRadius: "16px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
+            }}
+        >
+
+            <h2 style={{ marginBottom: "1rem" }}>Cycle Phase Guide</h2>
+
+            <div
+                style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                    gap: "1rem"
+                }}
+            >
+                {Object.entries(phaseInfo).map(([phase, info]) => (
+                    <div
+                        key={phase}
+                        style={{
+                            padding: "1rem",
+                            borderRadius: "12px",
+                            background: "white",
+                            border: `3px solid ${getPhaseColor(phase)}`
+                        }}
+                    >
+                        {/* Color + Title */}
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <div
+                                style={{
+                                    width: "12px",
+                                    height: "12px",
+                                    borderRadius: "50%",
+                                    background: getPhaseColor(phase)
+                                }}
+                            />
+                            <strong>{phase}</strong>
+                        </div>
+
+                        {/* Message */}
+                        <p style={{ marginTop: "0.5rem", fontSize: "0.9rem" }}>
+                            {info.message}
+                        </p>
+                    </div>
+                ))}
+            </div>
+        </div>
     </div>
   );
 }
