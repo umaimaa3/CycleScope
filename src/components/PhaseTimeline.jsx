@@ -14,6 +14,7 @@ function PhaseTimeline({ cycleDay, cycleLength, phase }) {
   return (
     <div style={{ marginTop: "2rem" }}>
       <h3>Cycle Progress</h3>
+      <br></br>
 
       <div  
         style={{
@@ -31,12 +32,12 @@ function PhaseTimeline({ cycleDay, cycleLength, phase }) {
 
         <div
             style={{
-            position: "absolute",
-            left: `${percentage}%`,
-            top: "-25px",
-            transform: "translateX(-50%)",
-            fontSize: "12px",
-            fontWeight: "bold"
+              position: "absolute",
+              left: `${percentage}%`,
+              top: "-25px",
+              transform: "translateX(-50%)",
+              fontSize: "12px",
+              fontWeight: "bold"
             }}
         >
             {phase}
@@ -45,13 +46,13 @@ function PhaseTimeline({ cycleDay, cycleLength, phase }) {
         {/* Marker */}
         <div
             style={{
-            position: "absolute",
-            left: `${percentage}%`,
-            top: "-5px",
-            width: "10px",
-            height: "30px",
-            background: "black",
-            transform: "translateX(-50%)"
+              position: "absolute",
+              left: `${percentage}%`,
+              top: "-5px",
+              width: "10px",
+              height: "30px",
+              background: "black",
+              transform: "translateX(-50%)"
             }}
          />
         </div>

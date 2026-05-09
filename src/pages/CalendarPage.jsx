@@ -21,7 +21,7 @@ function CalendarPage() {
     // Generate array of days
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
-    const [selectedDate, setSelectedDate] = useState(null);
+    const [selectedDate, setSelectedDate] = useState(new Date());
 
     const [events, setEvents] = useState(() => {
     const saved = localStorage.getItem("calendarEvents");
@@ -94,6 +94,8 @@ function CalendarPage() {
         setEditText("");
     }
     
+    const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const firstDayOfMonth = new Date(year, month, 1).getDay();
 
     return (
     <div style={{ padding: "2rem" }}>
@@ -109,9 +111,27 @@ function CalendarPage() {
                 flexWrap: "wrap"
             }}
         >
-
+        
             {/* Calendar */}
             <div style={{ flex: "3" }}>
+
+                {/* Weekday Header */}
+                <div
+                    style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(7, 1fr)",
+                        gap: "10px",
+                        marginTop: "1.5rem",
+                        marginBottom: "10px",
+                        textAlign: "center",
+                        fontWeight: "bold"
+                    }}
+                >
+                    {weekdays.map((day) => (
+                        <div key={day}>{day}</div>
+                    ))}
+                </div>
+
                 <div
                     style={{
                         display: "grid",
@@ -120,6 +140,10 @@ function CalendarPage() {
                         marginTop: "1.5rem"
                     }}
                 >
+                    {Array.from({ length: firstDayOfMonth }).map((_, i) => (
+                        <div key={`empty-${i}`}></div>
+                    ))}
+
                     {days.map((day) => {
                         const date = new Date(year, month, day);
                         const { phase } = getCycleInfo(cycleData, date);
@@ -137,19 +161,47 @@ function CalendarPage() {
                                     cursor: "pointer",
                                     padding: "10px",
                                     borderRadius: "8px",
-                                    textAlign: "center",
+                                    textAlign: "left",
                                     background: getPhaseColor(phase),
-                                    border: isSelected ? "2px solid black" : "none"
+                                    boxShadow: isSelected ? "0 0 0 2px rgba(0, 0, 0, 0.55)" : "none",
+                                    transition: "0.2s"
                                 }}
                                 
                             >
                                 <strong>{day}</strong>
                                 <div style={{ fontSize: "0.8rem" }}>{phase}</div>
 
-                                <ul style={{ marginTop: "5px", padding: 0, listStyle: "none", fontSize: "0.7rem" }}>
+                                <ul
+                                    style={{
+                                        marginTop: "5px",
+                                        padding: 0,
+                                        listStyle: "none",
+                                        fontSize: "0.7rem"
+                                    }}
+                                >
                                     {dayEvents.slice(0, 2).map((event, i) => (
-                                        <li key={i}>• {event}</li>
+                                        <li
+                                            key={i}
+                                            style={{
+                                                display: "flex",
+                                                alignItems: "flex-start",
+                                                gap: "4px",
+                                                marginBottom: "2px"
+                                            }}
+                                        >
+                                            <span>•</span>
+
+                                            <span
+                                                style={{
+                                                    wordBreak: "break-word",
+                                                    lineHeight: "1.2"
+                                                }}
+                                            >
+                                                {event}
+                                            </span>
+                                        </li>
                                     ))}
+
                                     {dayEvents.length > 2 && <li>...</li>}
                                 </ul>
                             </div>
@@ -211,7 +263,10 @@ function CalendarPage() {
                             style={{ 
                                 marginTop: "1rem",
                                 padding: 0,
-                                listStyle: "none"
+                                listStyle: "none",
+                                maxHeight: "300px",
+                                overflowY: "auto",
+                                paddingRight: "5px"
                             }}
                         >
                             {(events[selectedDate.toDateString()] || []).map((event, i) => (

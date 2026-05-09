@@ -73,7 +73,7 @@ function DashboardPage() {
           <p>Cycle Length: {cycleData.cycleLength} days</p>
           <p>Last Period Start Date: {cycleData.lastPeriod}</p>
 
-          <h2>Current Cycle Day: {cycleDay}</h2>
+          <h2>Cycle Day {cycleDay}</h2>
           <h2>Current Phase: {phase}</h2>
 
           <h3 style={{ marginTop: "1rem" }}>How you might feel today</h3>
