@@ -14,31 +14,6 @@ function DashboardPage() {
 
   const cycleData = JSON.parse(savedData);
 
-  /*
-  const cycleLength = Number(cycleData.cycleLength);
-  const lastPeriodDate = new Date(cycleData.lastPeriod);
-  const today = new Date();
-
-  const diffTime = today - lastPeriodDate;
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-  const cycleDay = (diffDays % cycleLength) + 1;
-
-  let phase;
-  const ovulationDay = cycleLength - 14; 
-
-  if (cycleDay <= 5) {
-    phase = "Menstrual";
-  } else if (cycleDay < ovulationDay) {
-    phase = "Follicular";
-  } else if (cycleDay === ovulationDay) {
-    phase = "Ovulation";
-  } else {
-    phase = "Luteal";
-  }
-
-  */
-
   const { cycleDay, phase, cycleLength } = getCycleInfo(cycleData);
 
   const currentPhaseInfo = phaseInfo[phase];
