@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 function InputPage() {
+
+  const navigate = useNavigate();
+
   const[cycleLength, setCycleLength] = useState("");
   const[lastPeriod, setLastPeriod] = useState("");
 
@@ -25,7 +29,8 @@ function InputPage() {
 
     localStorage.setItem("cycleData", JSON.stringify(cycleData));
 
-    console.log(cycleData);
+    navigate("/");
+    
   }
 
   return (

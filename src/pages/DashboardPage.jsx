@@ -48,6 +48,22 @@ function DashboardPage() {
           <p>Cycle Length: {cycleData.cycleLength} days</p>
           <p>Last Period Start Date: {cycleData.lastPeriod}</p>
 
+          <Link to="/setup">
+            <button
+              style={{
+                marginTop: "0.75rem",
+                padding: "0.6rem 1rem",
+                borderRadius: "10px",
+                border: "none",
+                background: "#d8b4fe",
+                fontWeight: "600",
+                cursor: "pointer"
+              }}
+            >
+              Update Cycle Info
+            </button>
+          </Link>
+
           <h2>Cycle Day {cycleDay}</h2>
           <h2>Current Phase: {phase}</h2>
 
