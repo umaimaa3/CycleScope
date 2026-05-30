@@ -1,15 +1,19 @@
 import { getCycleInfo } from "../utils/cycleUtils";
 import { phaseInfo } from "../data/phaseInfo";
 import { useState } from "react";
+import {
+  getCalendarEvents,
+  saveCalendarEvents
+} from "../services/calendarStorageService";
+import { getSavedCycleData } from "../services/cycleStorageService";
 
 function CalendarPage() {
-    const savedData = localStorage.getItem("cycleData");
+   
+    const cycleData = getSavedCycleData();
 
-    if (!savedData) {
+    if (!cycleData) {
         return <p>No cycle data found.</p>;
     }
-
-    const cycleData = JSON.parse(savedData);
 
     const today = new Date();
     const year = today.getFullYear();
@@ -23,10 +27,7 @@ function CalendarPage() {
 
     const [selectedDate, setSelectedDate] = useState(new Date());
 
-    const [events, setEvents] = useState(() => {
-    const saved = localStorage.getItem("calendarEvents");
-        return saved ? JSON.parse(saved) : {};
-    });
+    const [events, setEvents] = useState(() => getCalendarEvents());
     const [newEvent, setNewEvent] = useState("");
 
     const [editingIndex, setEditingIndex] = useState(null);
@@ -60,7 +61,7 @@ function CalendarPage() {
         };
 
         setEvents(updatedEvents);
-        localStorage.setItem("calendarEvents", JSON.stringify(updatedEvents));
+        saveCalendarEvents(updatedEvents);
         setNewEvent("");
     }
    
@@ -73,7 +74,7 @@ function CalendarPage() {
         };
 
         setEvents(updatedEvents);
-        localStorage.setItem("calendarEvents", JSON.stringify(updatedEvents));
+        saveCalendarEvents(updatedEvents);
     }
 
     function handleEditEvent(index) {
@@ -88,7 +89,7 @@ function CalendarPage() {
         };
 
         setEvents(newEvents);
-        localStorage.setItem("calendarEvents", JSON.stringify(newEvents));
+        saveCalendarEvents(newEvents);
 
         setEditingIndex(null);
         setEditText("");

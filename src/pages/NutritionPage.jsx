@@ -1,8 +1,11 @@
-import { nutritionData } from "../data/nutritionData";
 import { getCycleInfo } from "../utils/cycleUtils";
-import nutrientBenefits from "../data/nutrientBenefits";
-import cravingData from "../data/cravingData";
+import {
+  getNutritionForPhase,
+  getBenefitForNutrient,
+  getCravingSuggestions
+} from "../services/nutritionService";
 import { useState } from "react";
+
 
 function NutritionPage() {
 
@@ -18,27 +21,14 @@ function NutritionPage() {
 
     const cycleData = JSON.parse(savedData);
     const { phase } = getCycleInfo(cycleData);
-    const phaseData = nutritionData[phase];
+    const phaseData = getNutritionForPhase(phase);
 
     const [craving, setCraving] = useState("");
     const [results, setResults] = useState([]);
 
+
     function handleSearch() {
-
-        const search =
-            craving.toLowerCase();
-
-        if (cravingData[search]) {
-
-            setResults(cravingData[search]);
-
-        } else {
-
-            setResults([
-                "No suggestions found"
-            ]);
-
-        }
+        setResults(getCravingSuggestions(craving));
     }
 
 
@@ -174,7 +164,7 @@ function NutritionPage() {
                                     fontSize: "0.95rem"
                                 }}
                             >
-                                {nutrientBenefits[nutrient]}
+                                {getBenefitForNutrient(nutrient)}
                             </p>
 
                         </div>

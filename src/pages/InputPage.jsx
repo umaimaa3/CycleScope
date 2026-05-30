@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { saveCycleData, getSavedCycleData } from "../services/cycleStorageService";
 
 function InputPage() {
 
@@ -9,13 +10,11 @@ function InputPage() {
   const[lastPeriod, setLastPeriod] = useState("");
 
   useEffect(() => {
-    const savedData = localStorage.getItem("cycleData");
+    const savedData = getSavedCycleData();
 
     if (savedData) {
-      const parsedData = JSON.parse(savedData);
-
-      setCycleLength(parsedData.cycleLength);
-      setLastPeriod(parsedData.lastPeriod);
+      setCycleLength(savedData.cycleLength);
+      setLastPeriod(savedData.lastPeriod);
     }
   }, []);
 
@@ -27,10 +26,10 @@ function InputPage() {
       lastPeriod
     };
 
-    localStorage.setItem("cycleData", JSON.stringify(cycleData));
+    saveCycleData(cycleData);
 
     navigate("/");
-    
+
   }
 
   return (
@@ -59,12 +58,6 @@ function InputPage() {
 
       <button type="submit">Save Cycle</button>
       </form>
-
-      <hr/>
-
-      <h3>Debug View:</h3>
-      <p>Cycle Length: {cycleLength}</p>
-      <p>Last Period: {lastPeriod}</p>
 
     </div>
   );

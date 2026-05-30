@@ -1,20 +1,19 @@
 import PhaseTimeline from "../components/PhaseTimeline";
-import NutritionList from "../components/nutrition/NutritionList";
 import NutritionPlate from "../components/nutrition/NutritionPlate";
 import { phaseInfo } from "../data/phaseInfo";
-import { getCycleInfo } from "../utils/cycleUtils";
 import { Link } from "react-router-dom";
+import { getSavedCycleData } from "../services/cycleStorageService";
+import { getCurrentCycleInfo } from "../services/cycleService";
 
 function DashboardPage() {
-  const savedData = localStorage.getItem("cycleData");
 
-  if (!savedData) {
-    return <p>No cycle data found. Please enter your cycle first.</p>
+  const cycleData = getSavedCycleData();
+
+  if (!cycleData) {
+    return <p>No cycle data found. Please enter your cycle first.</p>;
   }
 
-  const cycleData = JSON.parse(savedData);
-
-  const { cycleDay, phase, cycleLength } = getCycleInfo(cycleData);
+  const { cycleDay, phase, cycleLength } = getCurrentCycleInfo(cycleData);
 
   const currentPhaseInfo = phaseInfo[phase];
 
