@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import PhaseTimeline from "../components/PhaseTimeline";
 import NutritionPlate from "../components/nutrition/NutritionPlate";
 import { phaseInfo } from "../data/phaseInfo";
@@ -7,7 +8,22 @@ import { getCurrentCycleInfo } from "../services/cycleService";
 
 function DashboardPage() {
 
-  const cycleData = getSavedCycleData();
+  const [cycleData, setCycleData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadCycleData() {
+      const data = await getSavedCycleData();
+      setCycleData(data);
+      setLoading(false);
+    }
+
+    loadCycleData();
+  }, []);
+
+  if (loading) {
+    return <p>Loading cycle data...</p>;
+  }
 
   if (!cycleData) {
     return <p>No cycle data found. Please enter your cycle first.</p>;

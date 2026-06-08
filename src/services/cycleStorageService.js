@@ -1,13 +1,27 @@
-export function getSavedCycleData() {
-  const savedData = localStorage.getItem("cycleData");
+const API_URL = "http://localhost:8080/api/cycle";
 
-  if (!savedData) {
-    return null;
+export async function getSavedCycleData() {
+  const response = await fetch(API_URL);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch cycle data");
   }
 
-  return JSON.parse(savedData);
+  return await response.json();
 }
 
-export function saveCycleData(cycleData) {
-  localStorage.setItem("cycleData", JSON.stringify(cycleData));
+export async function saveCycleData(cycleData) {
+  const response = await fetch(API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(cycleData)
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to save cycle data");
+  }
+
+  return await response.json();
 }

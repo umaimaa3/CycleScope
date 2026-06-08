@@ -1,6 +1,6 @@
 import { getCycleInfo } from "../utils/cycleUtils";
 import { phaseInfo } from "../data/phaseInfo";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   getCalendarEvents,
   saveCalendarEvents
@@ -9,7 +9,28 @@ import { getSavedCycleData } from "../services/cycleStorageService";
 
 function CalendarPage() {
    
-    const cycleData = getSavedCycleData();
+    const [cycleData, setCycleData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [events, setEvents] = useState(() => getCalendarEvents());
+    const [newEvent, setNewEvent] = useState("");
+    const [editingIndex, setEditingIndex] = useState(null);
+    const [editText, setEditText] = useState("");
+
+    useEffect(() => {
+        async function loadCycleData() {
+            const data = await getSavedCycleData();
+            setCycleData(data);
+            setLoading(false);
+        }
+
+        loadCycleData();
+    }, []);
+
+    if (loading) {
+        return <p>Loading calendar...</p>;
+    }
 
     if (!cycleData) {
         return <p>No cycle data found.</p>;
@@ -19,20 +40,12 @@ function CalendarPage() {
     const year = today.getFullYear();
     const month = today.getMonth();
 
-    // Get number of days in month
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-    // Generate array of days
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
-    const [selectedDate, setSelectedDate] = useState(new Date());
+    const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const firstDayOfMonth = new Date(year, month, 1).getDay();
 
-    const [events, setEvents] = useState(() => getCalendarEvents());
-    const [newEvent, setNewEvent] = useState("");
-
-    const [editingIndex, setEditingIndex] = useState(null);
-    const [editText, setEditText] = useState("");
-    
 
     function getPhaseColor(phase) {
         switch (phase) {
@@ -48,7 +61,6 @@ function CalendarPage() {
                 return "#eee";
         }
     }
-
   
     function handleAddEvent() {
         if (!newEvent || !selectedDate) return;
@@ -94,9 +106,6 @@ function CalendarPage() {
         setEditingIndex(null);
         setEditText("");
     }
-    
-    const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const firstDayOfMonth = new Date(year, month, 1).getDay();
 
     return (
     <div style={{ padding: "2rem" }}>

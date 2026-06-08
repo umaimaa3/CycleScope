@@ -4,33 +4,43 @@ import {
   getBenefitForNutrient,
   getCravingSuggestions
 } from "../services/nutritionService";
-import { useState } from "react";
+import { getSavedCycleData } from "../services/cycleStorageService";
+import { useState, useEffect } from "react";
 
 
 function NutritionPage() {
 
-    const savedData = localStorage.getItem("cycleData");
-
-    if (!savedData) {
-        return (
-            <p>
-                No cycle data found.
-            </p>
-        );
-    }
-
-    const cycleData = JSON.parse(savedData);
-    const { phase } = getCycleInfo(cycleData);
-    const phaseData = getNutritionForPhase(phase);
+    const [cycleData, setCycleData] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     const [craving, setCraving] = useState("");
     const [results, setResults] = useState([]);
 
+    useEffect(() => {
+        async function loadCycleData() {
+            const data = await getSavedCycleData();
+            setCycleData(data);
+            setLoading(false);
+        }
+
+        loadCycleData();
+    }, []);
+
+    if (loading) {
+        return <p>Loading nutrition...</p>;
+    }
+
+    if (!cycleData) {
+        return <p>No cycle data found.</p>;
+    }
+
+    const { phase } = getCycleInfo(cycleData);
+    const phaseData = getNutritionForPhase(phase);
+    
 
     function handleSearch() {
         setResults(getCravingSuggestions(craving));
     }
-
 
     return (
         <div

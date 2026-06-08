@@ -9,16 +9,20 @@ function InputPage() {
   const[cycleLength, setCycleLength] = useState("");
   const[lastPeriod, setLastPeriod] = useState("");
 
-  useEffect(() => {
-    const savedData = getSavedCycleData();
+   useEffect(() => {
+    async function loadCycleData() {
+      const savedData = await getSavedCycleData();
 
-    if (savedData) {
-      setCycleLength(savedData.cycleLength);
-      setLastPeriod(savedData.lastPeriod);
+      if (savedData) {
+        setCycleLength(savedData.cycleLength);
+        setLastPeriod(savedData.lastPeriod);
+      }
     }
+
+    loadCycleData();
   }, []);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     const cycleData = {
@@ -26,7 +30,7 @@ function InputPage() {
       lastPeriod
     };
 
-    saveCycleData(cycleData);
+    await saveCycleData(cycleData);
 
     navigate("/");
 
