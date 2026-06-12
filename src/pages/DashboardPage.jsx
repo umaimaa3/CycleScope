@@ -29,7 +29,7 @@ function DashboardPage() {
     return <p>No cycle data found. Please enter your cycle first.</p>;
   }
 
-  const { cycleDay, phase, cycleLength } = getCurrentCycleInfo(cycleData);
+  const { cycleDay, phase, cycleLength, nextPeriodDate} = getCurrentCycleInfo(cycleData);
 
   const currentPhaseInfo = phaseInfo[phase];
 
@@ -62,6 +62,12 @@ function DashboardPage() {
 
           <p>Cycle Length: {cycleData.cycleLength} days</p>
           <p>Last Period Start Date: {cycleData.lastPeriod}</p>
+          <p>
+             Next Predicted Period:{" "}
+            {nextPeriodDate instanceof Date
+              ? nextPeriodDate.toLocaleDateString()
+              : "Not available"}
+          </p>
 
           <Link to="/setup">
             <button

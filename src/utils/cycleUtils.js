@@ -7,8 +7,13 @@ export function getCycleInfo(cycleData, date = new Date()) {
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
   const cycleDay = ((diffDays % cycleLength) + cycleLength) % cycleLength + 1;
-
   const ovulationDay = Math.max(cycleLength - 14, 10);
+  const daysRemaining = cycleLength - cycleDay;
+
+  const nextPeriodDate = new Date(date);
+  nextPeriodDate.setDate(
+    nextPeriodDate.getDate() + daysRemaining
+  );
 
   let phase;
 
@@ -25,6 +30,7 @@ export function getCycleInfo(cycleData, date = new Date()) {
   return {
     cycleDay,
     phase,
-    cycleLength, 
+    cycleLength,
+    nextPeriodDate
   };
 }
