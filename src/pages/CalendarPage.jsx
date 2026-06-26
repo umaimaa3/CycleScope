@@ -3,7 +3,9 @@ import { phaseInfo } from "../data/phaseInfo";
 import { useState, useEffect } from "react";
 import {
   getCalendarEvents,
-  saveCalendarEvents
+  addCalendarEvent,
+  updateCalendarEvent,
+  deleteCalendarEvent
 } from "../services/calendarStorageService";
 import { getSavedCycleData } from "../services/cycleStorageService";
 
@@ -13,19 +15,22 @@ function CalendarPage() {
     const [loading, setLoading] = useState(true);
 
     const [selectedDate, setSelectedDate] = useState(new Date());
-    const [events, setEvents] = useState(() => getCalendarEvents());
+    const [events, setEvents] = useState([]);
     const [newEvent, setNewEvent] = useState("");
     const [editingIndex, setEditingIndex] = useState(null);
     const [editText, setEditText] = useState("");
 
     useEffect(() => {
-        async function loadCycleData() {
-            const data = await getSavedCycleData();
-            setCycleData(data);
+        async function loadData() {
+            const cycle = await getSavedCycleData();
+            const calendarEvents = await getCalendarEvents();
+
+            setCycleData(cycle);
+            setEvents(calendarEvents);
             setLoading(false);
         }
 
-        loadCycleData();
+        loadData();
     }, []);
 
     if (loading) {
@@ -61,47 +66,37 @@ function CalendarPage() {
                 return "#eee";
         }
     }
+
+    function getEventsForDate(date) {
+        const key = date.toDateString();
+        return events.filter((event) => event.eventDate === key);
+    }
   
-    function handleAddEvent() {
+    async function handleAddEvent() {
         if (!newEvent || !selectedDate) return;
 
         const key = selectedDate.toDateString();
 
-        const updatedEvents = {
-            ...events,
-            [key]: [...(events[key] || []), newEvent],
-        };
+        const savedEvent = await addCalendarEvent(key, newEvent);
 
-        setEvents(updatedEvents);
-        saveCalendarEvents(updatedEvents);
+        setEvents([...events, savedEvent]);
         setNewEvent("");
     }
    
-    function handleDeleteEvent(index) {
-        const key = selectedDate.toDateString();
+    async function handleDeleteEvent(id) {
+        await deleteCalendarEvent(id);
 
-        const updatedEvents = {
-            ...events,
-            [key]: events[key].filter((_, i) => i !== index),
-        };
-
-        setEvents(updatedEvents);
-        saveCalendarEvents(updatedEvents);
+        setEvents(events.filter((event) => event.id !== id));
     }
 
-    function handleEditEvent(index) {
-        const key = selectedDate.toDateString();
+    async function handleEditEvent(id) {
+        const updatedEvent = await updateCalendarEvent(id, editText);
 
-        const updatedEvents = [...events[key]];
-        updatedEvents[index] = editText;
-
-        const newEvents = {
-            ...events,
-            [key]: updatedEvents,
-        };
-
-        setEvents(newEvents);
-        saveCalendarEvents(newEvents);
+        setEvents(
+            events.map((event) =>
+                event.id === id ? updatedEvent : event
+            )
+        );
 
         setEditingIndex(null);
         setEditText("");
@@ -161,7 +156,7 @@ function CalendarPage() {
                             selectedDate &&
                             selectedDate.toDateString() === date.toDateString();
                         const dateKey = date.toDateString();
-                        const dayEvents = events[dateKey] || [];
+                        const dayEvents = getEventsForDate(date);
 
                         return (
                             <div
@@ -207,7 +202,7 @@ function CalendarPage() {
                                                     lineHeight: "1.2"
                                                 }}
                                             >
-                                                {event}
+                                                {event.eventText}
                                             </span>
                                         </li>
                                     ))}
@@ -279,7 +274,7 @@ function CalendarPage() {
                                 paddingRight: "5px"
                             }}
                         >
-                            {(events[selectedDate.toDateString()] || []).map((event, i) => (
+                            {getEventsForDate(selectedDate).map((event, i) => (
                                 <li
                                     key={i}
                                     style={{
@@ -315,7 +310,7 @@ function CalendarPage() {
                                                 }}
                                             >
                                                 <button
-                                                    onClick={() => handleEditEvent(i)}
+                                                    onClick={() => handleEditEvent(event.id)}
                                                     style={{
                                                         border: "none",
                                                         background: "#dbeafe",
@@ -339,7 +334,7 @@ function CalendarPage() {
                                                     fontSize: "0.9rem"
                                                 }}
                                             >
-                                                {event}
+                                                {event.eventText}
                                             </span>
 
                                             {/* BUTTONS */}
@@ -353,7 +348,7 @@ function CalendarPage() {
                                                 <button
                                                     onClick={() => {
                                                         setEditingIndex(i);
-                                                        setEditText(event);
+                                                        setEditText(event.eventText);
                                                     }}
                                                     style={{
                                                         border: "none",
@@ -369,7 +364,7 @@ function CalendarPage() {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        handleDeleteEvent(i);
+                                                        handleDeleteEvent(event.id);
                                                     }}
                                                     style={{
                                                         border: "none",
