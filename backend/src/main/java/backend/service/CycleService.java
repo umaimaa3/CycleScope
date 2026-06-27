@@ -21,7 +21,14 @@ public class CycleService {
     }
 
     public CycleData saveCycleData(CycleData cycleData) {
-        cycleRepository.deleteAll();
-        return cycleRepository.save(cycleData);
+        CycleData existingCycleData = cycleRepository.findAll()
+            .stream()
+            .findFirst()
+            .orElse(new CycleData());
+
+        existingCycleData.setCycleLength(cycleData.getCycleLength());
+        existingCycleData.setLastPeriod(cycleData.getLastPeriod());
+
+        return cycleRepository.save(existingCycleData); 
     }
 }
