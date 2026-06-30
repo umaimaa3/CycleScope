@@ -14,12 +14,14 @@ public class SymptomLog {
 
     private String logDate;
     private String symptom;
+    private Integer intensity;
 
     public SymptomLog() {}
 
-    public SymptomLog(String logDate, String symptom) {
+    public SymptomLog(String logDate, String symptom, Integer intensity) {
         this.logDate = logDate;
         this.symptom = symptom;
+        this.intensity = intensity;
     }
 
     public Long getId() {
@@ -34,12 +36,20 @@ public class SymptomLog {
         return symptom;
     }
 
+    public Integer getIntensity() {
+        return intensity;
+    }
+
     public void setLogDate(String logDate) {
         this.logDate = logDate;
     }
 
     public void setSymptom(String symptom) {
         this.symptom = symptom;
+    }
+
+    public void setIntensity(Integer intensity) {
+        this.intensity = intensity;
     }
     
 }

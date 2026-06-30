@@ -17,6 +17,8 @@ function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   const [symptomLogs, setSymptomLogs] = useState([]);
+  const [pendingSymptom, setPendingSymptom] = useState(null);
+  const [editingLog, setEditingLog] = useState(null);
 
   const symptomOptions = [
     "Cramps",
@@ -65,10 +67,16 @@ function DashboardPage() {
     (log) => log.logDate === todayKey
   );
 
-  async function handleAddSymptom(symptom) {
-    const savedSymptom = await addSymptomLog(todayKey, symptom);
+  async function handleAddSymptom(symptom, intensity) {
+    const savedSymptom = await addSymptomLog(
+        todayKey,
+        symptom,
+        intensity
+    );
 
     setSymptomLogs([...symptomLogs, savedSymptom]);
+
+    setPendingSymptom(null);
   }
 
   async function handleDeleteSymptom(id) {
@@ -171,9 +179,66 @@ function DashboardPage() {
 
             <h2>Today's Symptom Log</h2>
 
+            {pendingSymptom && (
+              <div style={{ marginBottom: "1rem" }}>
+                <p style={{ fontWeight: "600", marginBottom: "0.5rem" }}>
+                  How would you rate this today?
+                </p>
+
+                <div style={{ display: "flex", gap: "8px" }}>
+                  {[1, 2, 3, 4, 5].map((level) => (
+                    <button
+                      key={level}
+                      onClick={async () => {
+                        // EDIT FLOW
+                        if (editingLog) {
+                          await deleteSymptomLog(editingLog.id);
+
+                          const saved = await addSymptomLog(
+                            todayKey,
+                            pendingSymptom,
+                            level
+                          );
+
+                          setSymptomLogs((prev) => [
+                            ...prev.filter((l) => l.id !== editingLog.id),
+                            saved
+                          ]);
+                        }
+
+                        // ADD FLOW
+                        else {
+                          const saved = await addSymptomLog(
+                            todayKey,
+                            pendingSymptom,
+                            level
+                          );
+
+                          setSymptomLogs((prev) => [...prev, saved]);
+                        }
+
+                        setPendingSymptom(null);
+                        setEditingLog(null);
+                      }}
+                      style={{
+                        border: "none",
+                        borderRadius: "999px",
+                        padding: "6px 10px",
+                        cursor: "pointer",
+                        background: "#e2e8f0"
+                      }}
+                    >
+                      {level}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "1rem" }}>
+
               {symptomOptions.map((symptom) => {
-                const existingLog = todaysSymptoms.find(
+                const existingLog = todaysSymptoms?.find(
                   (log) => log.symptom === symptom
                 );
 
@@ -182,21 +247,47 @@ function DashboardPage() {
                 return (
                   <button
                     key={symptom}
-                    onClick={() =>
-                      isSelected
-                        ? handleDeleteSymptom(existingLog.id)
-                        : handleAddSymptom(symptom)
-                    }
-                    style={{
-                      border: "none",
-                      borderRadius: "999px",
-                      padding: "8px 12px",
-                      cursor: "pointer",
-                      background: isSelected ? "#d8b4fe" : "#e2e8f0",
-                      fontWeight: isSelected ? "600" : "400"
-                    }}
-                  >
-                    {symptom}
+                      onClick={() => {
+                        setPendingSymptom(symptom);
+                        setEditingLog(existingLog || null);
+                      }}
+                      style={{
+                        border: "none",
+                        borderRadius: "999px",
+                        padding: "8px 12px",
+                        cursor: "pointer",
+                        background: isSelected ? "#d8b4fe" : "#e2e8f0",
+                        fontWeight: isSelected ? "600" : "400",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px"
+                      }}
+                    >
+                      {/* symptom label + intensity */}
+                      <span>
+                        {isSelected && existingLog?.intensity
+                          ? `${symptom} • ${existingLog.intensity}`
+                          : symptom}
+                      </span>
+
+                      {/* DELETE BUTTON */}
+                      {isSelected && (
+                        <span
+                          onClick={(e) => {
+                            e.stopPropagation(); // prevents opening edit modal
+                            handleDeleteSymptom(existingLog.id);
+                          }}
+                          style={{
+                            marginLeft: "4px",
+                            fontSize: "14px",
+                            cursor: "pointer",
+                            opacity: 0.7
+                          }}
+                        >
+                          ✕
+                        </span>
+                      )}
+                    
                   </button>
                 );
               })}

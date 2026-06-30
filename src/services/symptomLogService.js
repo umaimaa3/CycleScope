@@ -5,13 +5,13 @@ export async function getSymptomLogs() {
   return response.json();
 }
 
-export async function addSymptomLog(logDate, symptom) {
+export async function addSymptomLog(logDate, symptom, intensity) {
   const response = await fetch(API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ logDate, symptom }),
+    body: JSON.stringify({ logDate, symptom, intensity }),
   });
 
   return response.json();
