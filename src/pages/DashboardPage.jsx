@@ -139,7 +139,7 @@ function DashboardPage() {
             </button>
           </Link>
 
-          <h2>Cycle Day {cycleDay}</h2>
+          <h2>Cycle Day {cycleDay + 1}</h2>
           <h2>Current Phase: {phase}</h2>
 
           <h3 style={{ marginTop: "1rem" }}>How you might feel today</h3>
@@ -151,7 +151,7 @@ function DashboardPage() {
           <p>{currentPhaseInfo.message}</p>
 
           <PhaseTimeline 
-          cycleDay={cycleDay} 
+          cycleDay={cycleDay + 1} 
           cycleLength={cycleLength} 
           phase={phase}
           />
