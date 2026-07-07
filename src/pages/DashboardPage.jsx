@@ -4,7 +4,7 @@ import NutritionPlate from "../components/nutrition/NutritionPlate";
 import { phaseInfo } from "../data/phaseInfo";
 import { Link } from "react-router-dom";
 import { getSavedCycleData } from "../services/cycleStorageService";
-import { getCurrentCycleInfo } from "../services/cycleService";
+import { getPrediction } from "../services/predictionService";
 import {
   getSymptomLogs,
   addSymptomLog,
@@ -14,6 +14,7 @@ import {
 function DashboardPage() {
 
   const [cycleData, setCycleData] = useState(null);
+  const [prediction, setPrediction] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const [symptomLogs, setSymptomLogs] = useState([]);
@@ -35,9 +36,11 @@ function DashboardPage() {
   useEffect(() => {
     async function loadData() {
       const cycle = await getSavedCycleData();
+      const prediction = await getPrediction();
       const symptoms = await getSymptomLogs();
 
       setCycleData(cycle);
+      setPrediction(prediction);
       setSymptomLogs(symptoms);
       setLoading(false);
     }
@@ -52,7 +55,7 @@ function DashboardPage() {
     return <p>No cycle data found. Please enter your cycle first.</p>;
   }
 
-  const { cycleDay, phase, cycleLength, nextPeriodDate} = getCurrentCycleInfo(cycleData);
+  const { cycleDay, phase, cycleLength, nextPeriodDate } = prediction;
 
   const currentPhaseInfo = phaseInfo[phase];
 
@@ -117,10 +120,8 @@ function DashboardPage() {
           <p>Cycle Length: {cycleData.cycleLength} days</p>
           <p>Last Period Start Date: {formatDate(cycleData.lastPeriod)}</p>
           <p>
-             Next Predicted Period:{" "}
-            {nextPeriodDate instanceof Date
-              ? nextPeriodDate.toLocaleDateString()
-              : "Not available"}
+            Next Predicted Period:{" "}
+            {formatDate(nextPeriodDate)}
           </p>
 
           <Link to="/setup">
@@ -139,7 +140,7 @@ function DashboardPage() {
             </button>
           </Link>
 
-          <h2>Cycle Day {cycleDay + 1}</h2>
+          <h2>Cycle Day {cycleDay}</h2>
           <h2>Current Phase: {phase}</h2>
 
           <h3 style={{ marginTop: "1rem" }}>How you might feel today</h3>
@@ -151,7 +152,7 @@ function DashboardPage() {
           <p>{currentPhaseInfo.message}</p>
 
           <PhaseTimeline 
-          cycleDay={cycleDay + 1} 
+          cycleDay={cycleDay} 
           cycleLength={cycleLength} 
           phase={phase}
           />
