@@ -1,40 +1,42 @@
-import { getCycleInfo } from "../utils/cycleUtils";
+import { getPrediction } from "../services/predictionService";
 import {
   getNutritionForPhase,
   getBenefitForNutrient,
   getCravingSuggestions
 } from "../services/nutritionService";
-import { getSavedCycleData } from "../services/cycleStorageService";
 import { useState, useEffect } from "react";
 
 
 function NutritionPage() {
 
-    const [cycleData, setCycleData] = useState(null);
+    const [prediction, setPrediction] = useState(null);
     const [loading, setLoading] = useState(true);
 
     const [craving, setCraving] = useState("");
     const [results, setResults] = useState([]);
 
+    
     useEffect(() => {
-        async function loadCycleData() {
-            const data = await getSavedCycleData();
-            setCycleData(data);
+        async function loadPrediction() {
+            const data = await getPrediction();
+
+            setPrediction(data);
             setLoading(false);
         }
 
-        loadCycleData();
+        loadPrediction();
     }, []);
+
 
     if (loading) {
         return <p>Loading nutrition...</p>;
     }
 
-    if (!cycleData) {
+    if (!prediction) {
         return <p>No cycle data found.</p>;
     }
 
-    const { phase } = getCycleInfo(cycleData);
+    const phase = prediction.phase;
     const phaseData = getNutritionForPhase(phase);
     
 

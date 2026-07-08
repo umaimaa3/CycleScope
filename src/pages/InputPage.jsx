@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { saveCycleData, getSavedCycleData } from "../services/cycleStorageService";
+import { saveCycleData, getCycleData } from "../services/cycleService";
 
 function InputPage() {
 
@@ -11,7 +11,7 @@ function InputPage() {
 
    useEffect(() => {
     async function loadCycleData() {
-      const savedData = await getSavedCycleData();
+      const savedData = await getCycleData();
 
       if (savedData) {
         setCycleLength(savedData.cycleLength);

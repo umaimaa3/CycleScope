@@ -7,6 +7,7 @@ import backend.model.CycleData;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 @Service
 public class PredictionService {
@@ -23,22 +24,21 @@ public class PredictionService {
 
         int cycleLength = cycleData.getCycleLength();
         LocalDate lastPeriod = LocalDate.parse(cycleData.getLastPeriod());
-
         LocalDate today = LocalDate.now();
 
-        long diffDays = java.time.temporal.ChronoUnit.DAYS.between(lastPeriod, today);
+        long diffDays = ChronoUnit.DAYS.between(lastPeriod, today);
 
-        System.out.println("Backend today: " + today);
-        System.out.println("Last period: " + lastPeriod);
-        System.out.println("Diff days: " + diffDays);
+        // Internal 0-based value
+        int cycleDayIndex = PredictionEngine.normalizeCycleDay((int) diffDays, cycleLength);
+        // User-facing 1-based value
+        int cycleDay = cycleDayIndex + 1;
 
-        int cycleDay = PredictionEngine.normalizeCycleDay((int) diffDays, cycleLength);
-
-        String phase = PredictionEngine.calculatePhase(cycleDay, cycleLength);
+        String phase = PredictionEngine.calculatePhase(cycleDayIndex, cycleLength);
 
         LocalDate nextPeriod = PredictionEngine.calculateNextPeriod(lastPeriod, today, cycleLength);
 
         return new CyclePredictionDTO(
+                cycleDayIndex,
                 cycleDay,
                 phase,
                 cycleLength,

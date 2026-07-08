@@ -3,7 +3,7 @@ import PhaseTimeline from "../components/PhaseTimeline";
 import NutritionPlate from "../components/nutrition/NutritionPlate";
 import { phaseInfo } from "../data/phaseInfo";
 import { Link } from "react-router-dom";
-import { getSavedCycleData } from "../services/cycleStorageService";
+import { getCycleData } from "../services/cycleService";
 import { getPrediction } from "../services/predictionService";
 import {
   getSymptomLogs,
@@ -35,7 +35,7 @@ function DashboardPage() {
 
   useEffect(() => {
     async function loadData() {
-      const cycle = await getSavedCycleData();
+      const cycle = await getCycleData();
       const prediction = await getPrediction();
       const symptoms = await getSymptomLogs();
 

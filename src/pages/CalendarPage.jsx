@@ -1,4 +1,4 @@
-import { getCycleInfo } from "../utils/cycleUtils";
+import { getPhaseForDate } from "../utils/phaseUtils";
 import { phaseInfo } from "../data/phaseInfo";
 import { useState, useEffect } from "react";
 import {
@@ -6,8 +6,8 @@ import {
   addCalendarEvent,
   updateCalendarEvent,
   deleteCalendarEvent
-} from "../services/calendarStorageService";
-import { getSavedCycleData } from "../services/cycleStorageService";
+} from "../services/calendarService";
+import { getCycleData } from "../services/cycleService";
 
 function CalendarPage() {
    
@@ -22,7 +22,7 @@ function CalendarPage() {
 
     useEffect(() => {
         async function loadData() {
-            const cycle = await getSavedCycleData();
+            const cycle = await getCycleData();
             const calendarEvents = await getCalendarEvents();
 
             setCycleData(cycle);
@@ -151,7 +151,7 @@ function CalendarPage() {
 
                     {days.map((day) => {
                         const date = new Date(year, month, day);
-                        const { phase } = getCycleInfo(cycleData, date);
+                        const phase = getPhaseForDate(cycleData, date);
                         const isSelected =
                             selectedDate &&
                             selectedDate.toDateString() === date.toDateString();
