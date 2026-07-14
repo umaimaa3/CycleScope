@@ -8,11 +8,11 @@ public class PredictionEngine {
         return ((diffDays % cycleLength) + cycleLength) % cycleLength;
     }
 
-    public static String calculatePhase(int cycleDay, int cycleLength) {
+    public static String calculatePhase(int cycleDay, int periodLength, int cycleLength) {
 
         int ovulationDay = Math.max(cycleLength - 14, 10);
 
-        if (cycleDay <= 4) {
+        if (cycleDay < periodLength) {
             return "Menstrual";
         } else if (cycleDay < ovulationDay) {
             return "Follicular";

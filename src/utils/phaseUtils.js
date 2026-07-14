@@ -9,6 +9,7 @@ export function getPhaseForDate(cycleData, date = new Date()) {
     }
 
     const cycleLength = Number(cycleData.cycleLength);
+    const periodLength = Number(cycleData.periodLength);
 
     const [year, month, day] = cycleData.lastPeriod.split("-");
 
@@ -35,7 +36,7 @@ export function getPhaseForDate(cycleData, date = new Date()) {
         Math.max(cycleLength - 14, 10);
 
 
-    if (cycleDay <= 4) {
+    if (cycleDay < periodLength) {
         return "Menstrual";
     }
 

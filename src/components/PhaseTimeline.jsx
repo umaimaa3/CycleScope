@@ -1,8 +1,8 @@
-function PhaseTimeline({ cycleDay, cycleLength, phase }) {
+function PhaseTimeline({ cycleDay, cycleLength, periodLength, phase }) {
   const percentage = (cycleDay / cycleLength) * 100;
 
   const ovulationDay = cycleLength - 14;
-  const menstrualEnd = 5;
+  const menstrualEnd = periodLength;
   const follicularEnd = ovulationDay - 1;
   const ovulation = ovulationDay;
 
@@ -12,6 +12,7 @@ function PhaseTimeline({ cycleDay, cycleLength, phase }) {
   const lutealWidth = 100 - (menstrualWidth + follicularWidth + ovulationWidth);
 
   return (
+
     <div style={{ marginTop: "2rem" }}>
       <h3>Cycle Progress</h3>
       <br></br>

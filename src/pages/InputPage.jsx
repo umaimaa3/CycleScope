@@ -6,7 +6,8 @@ function InputPage() {
 
   const navigate = useNavigate();
 
-  const[cycleLength, setCycleLength] = useState("");
+  const[cycleLength, setCycleLength] = useState(28);
+  const[periodLength, setPeriodLength] = useState(5);
   const[lastPeriod, setLastPeriod] = useState("");
 
    useEffect(() => {
@@ -15,6 +16,7 @@ function InputPage() {
 
       if (savedData) {
         setCycleLength(savedData.cycleLength);
+        setPeriodLength(savedData.periodLength);
         setLastPeriod(savedData.lastPeriod);
       }
     }
@@ -27,6 +29,7 @@ function InputPage() {
 
     const cycleData = {
       cycleLength,
+      periodLength,
       lastPeriod
     };
 
@@ -48,6 +51,15 @@ function InputPage() {
           type="number"
           value={cycleLength}
           onChange={(e) => setCycleLength(e.target.value)}
+        />
+      </div>
+
+      <div style={{ marginBottom: "1rem" }}>
+        <label>Period Length (days): </label>
+        <input
+          type="number"
+          value={periodLength}
+          onChange={(e) => setPeriodLength(e.target.value)}
         />
       </div>
 

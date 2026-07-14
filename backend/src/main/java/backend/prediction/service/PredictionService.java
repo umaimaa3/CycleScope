@@ -23,6 +23,8 @@ public class PredictionService {
         CycleData cycleData = cycleService.getCycleData();
 
         int cycleLength = cycleData.getCycleLength();
+        int periodLength = cycleData.getPeriodLength();
+
         LocalDate lastPeriod = LocalDate.parse(cycleData.getLastPeriod());
         LocalDate today = LocalDate.now();
 
@@ -33,7 +35,7 @@ public class PredictionService {
         // User-facing 1-based value
         int cycleDay = cycleDayIndex + 1;
 
-        String phase = PredictionEngine.calculatePhase(cycleDayIndex, cycleLength);
+        String phase = PredictionEngine.calculatePhase(cycleDayIndex, periodLength, cycleLength);
 
         LocalDate nextPeriod = PredictionEngine.calculateNextPeriod(lastPeriod, today, cycleLength);
 
@@ -42,6 +44,7 @@ public class PredictionService {
                 cycleDay,
                 phase,
                 cycleLength,
+                periodLength,
                 nextPeriod
         );
     }

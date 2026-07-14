@@ -14,17 +14,23 @@ public class CycleData {
     private Long id;
     
     private int cycleLength;
+    private int periodLength;
     private String lastPeriod;
 
     public CycleData() {}
 
-    public CycleData(int cycleLength, String lastPeriod) {
+    public CycleData(int cycleLength, int periodLength, String lastPeriod) {
         this.cycleLength = cycleLength;
+        this.periodLength = periodLength;
         this.lastPeriod = lastPeriod;
     }
 
     public int getCycleLength() {
         return cycleLength;
+    }
+
+    public int getPeriodLength() {
+        return periodLength;
     }
 
     public String getLastPeriod() {
@@ -33,6 +39,10 @@ public class CycleData {
 
     public void setCycleLength(int cycleLength) {
         this.cycleLength = cycleLength;
+    }
+
+    public void setPeriodLength(int periodLength) {
+        this.periodLength = periodLength;
     }
 
     public void setLastPeriod(String lastPeriod) {

@@ -55,7 +55,7 @@ function DashboardPage() {
     return <p>No cycle data found. Please enter your cycle first.</p>;
   }
 
-  const { cycleDay, phase, cycleLength, nextPeriodDate } = prediction;
+  const { cycleDay, phase, cycleLength, periodLength, nextPeriodDate } = prediction;
 
   const currentPhaseInfo = phaseInfo[phase];
 
@@ -154,6 +154,7 @@ function DashboardPage() {
           <PhaseTimeline 
           cycleDay={cycleDay} 
           cycleLength={cycleLength} 
+          periodLength={periodLength}
           phase={phase}
           />
         </div>
