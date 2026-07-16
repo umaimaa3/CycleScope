@@ -2,9 +2,7 @@ package backend.service;
 
 import backend.model.CycleData;
 import backend.repository.CycleRepository;
-
 import java.time.LocalDate;
-
 import org.springframework.stereotype.Service;
 
 @Service
