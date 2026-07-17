@@ -2,6 +2,7 @@ package backend.prediction.service;
 
 import backend.prediction.dto.CyclePredictionDTO;
 import backend.prediction.engine.PredictionEngine;
+import backend.service.CycleHistoryService;
 import backend.service.CycleService;
 import backend.model.CycleData;
 import org.springframework.stereotype.Service;
@@ -13,9 +14,11 @@ import java.time.temporal.ChronoUnit;
 public class PredictionService {
 
     private final CycleService cycleService;
+    private final CycleHistoryService cycleHistoryService;
 
-    public PredictionService(CycleService cycleService) {
+    public PredictionService(CycleService cycleService, CycleHistoryService cycleHistoryService) {
         this.cycleService = cycleService;
+        this.cycleHistoryService = cycleHistoryService;
     }
 
     public CyclePredictionDTO calculatePrediction() {
@@ -38,6 +41,17 @@ public class PredictionService {
         String phase = PredictionEngine.calculatePhase(cycleDayIndex, periodLength, cycleLength);
 
         LocalDate nextPeriod = PredictionEngine.calculateNextPeriod(lastPeriod, today, cycleLength);
+
+        // for cycleHistory
+        LocalDate predictedEndDate = nextPeriod.plusDays(periodLength - 1);
+
+        cycleHistoryService.recordPredictedCycle(
+                nextPeriod,
+                predictedEndDate,
+                cycleLength,
+                periodLength,
+                70
+        );
 
         return new CyclePredictionDTO(
                 cycleDayIndex,

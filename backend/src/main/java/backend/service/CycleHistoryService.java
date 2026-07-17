@@ -5,6 +5,7 @@ import backend.repository.CycleHistoryRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -30,6 +31,42 @@ public class CycleHistoryService {
 
     public Optional<CycleHistory> getLatestCycle() {
         return cycleHistoryRepository.findTopByOrderByCycleNumberDesc();
+    }
+
+    private int getNextCycleNumber() {
+        return getLatestCycle()
+                .map(cycle -> cycle.getCycleNumber() + 1)
+                .orElse(1);
+    }
+
+    private boolean predictionAlreadyExists(LocalDate predictedStartDate) {
+
+        return getLatestCycle()
+                .map(cycle -> cycle.getPredictedStartDate().equals(predictedStartDate))
+                .orElse(false);
+    }
+
+    public void recordPredictedCycle(
+        LocalDate predictedStartDate,
+        LocalDate predictedEndDate,
+        int predictedCycleLength,
+        int predictedPeriodLength,
+        Integer confidence) {
+
+        if (predictionAlreadyExists(predictedStartDate)) {
+            return;
+        }
+
+        CycleHistory cycleHistory = new CycleHistory(
+                getNextCycleNumber(),
+                predictedStartDate,
+                predictedEndDate,
+                predictedCycleLength,
+                predictedPeriodLength,
+                confidence
+        );
+
+        saveCycleHistory(cycleHistory);
     }
 
 }
