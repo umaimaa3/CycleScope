@@ -1,0 +1,10 @@
+package backend.model;
+
+public enum CycleStatus {
+    PREDICTED,
+    WAITING_FOR_START_CONFIRMATION,
+    ACTIVE,
+    COMPLETED,
+    START_CONFIRMATION_EXPIRED,
+    END_CONFIRMATION_EXPIRED
+}

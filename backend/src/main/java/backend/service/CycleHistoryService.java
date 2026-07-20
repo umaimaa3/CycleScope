@@ -1,8 +1,10 @@
 package backend.service;
 
 import backend.model.CycleHistory;
+import backend.model.CycleStatus;
 import backend.repository.CycleHistoryRepository;
 import org.springframework.stereotype.Service;
+
 
 import java.util.Optional;
 import java.time.LocalDate;
@@ -31,6 +33,31 @@ public class CycleHistoryService {
 
     public Optional<CycleHistory> getLatestCycle() {
         return cycleHistoryRepository.findTopByOrderByCycleNumberDesc();
+    }
+
+    public CycleHistory updateCycleStatus(CycleHistory cycleHistory) {
+
+        LocalDate today = LocalDate.now();
+
+        if (
+            cycleHistory.getStatus() == CycleStatus.PREDICTED &&
+            !today.isBefore(cycleHistory.getPredictedStartDate())
+        ) {
+            cycleHistory.setStatus(CycleStatus.WAITING_FOR_START_CONFIRMATION);
+        }
+
+        return cycleHistoryRepository.save(cycleHistory);
+    }
+
+    public Optional<CycleHistory> getCurrentCycle() {
+
+        Optional<CycleHistory> currentCycle = getLatestCycle();
+
+        if (currentCycle.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(updateCycleStatus(currentCycle.get()));
     }
 
     private int getNextCycleNumber() {

@@ -5,6 +5,7 @@ import backend.service.CycleHistoryService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/cycle-history")
@@ -36,6 +37,11 @@ public class CycleHistoryController {
     public CycleHistory getLatestCycle() {
         return cycleHistoryService.getLatestCycle()
                 .orElse(null);
+    }
+
+    @GetMapping("/current")
+    public Optional<CycleHistory> getCurrentCycle() {
+        return cycleHistoryService.getCurrentCycle();
     }
     
 }
