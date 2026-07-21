@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -71,6 +72,37 @@ public class CycleHistoryService {
         return getLatestCycle()
                 .map(cycle -> cycle.getPredictedStartDate().equals(predictedStartDate))
                 .orElse(false);
+    }
+
+    public Optional<CycleHistory> confirmPeriodStart(Long id, LocalDate actualStartDate) {
+
+        Optional<CycleHistory> optionalCycle = cycleHistoryRepository.findById(id);
+
+        if (optionalCycle.isEmpty()) {
+            return Optional.empty();
+        }
+
+        CycleHistory cycle = optionalCycle.get();
+
+        if (cycle.getStatus() != CycleStatus.WAITING_FOR_START_CONFIRMATION) {
+            return Optional.empty();
+        }
+
+        cycle.setActualStartDate(actualStartDate);
+
+        long error = ChronoUnit.DAYS.between(
+                cycle.getPredictedStartDate(),
+                actualStartDate
+        );
+
+        cycle.setPredictionErrorDays((int) error);
+
+        cycle.setStatus(CycleStatus.ACTIVE);
+
+        cycleHistoryRepository.save(cycle);
+
+        return Optional.of(cycle);
+
     }
 
     public void recordPredictedCycle(

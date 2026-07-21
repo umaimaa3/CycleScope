@@ -1,8 +1,10 @@
 package backend.controller;
 
 import backend.model.CycleHistory;
+import backend.dto.ConfirmPeriodStartRequest;
 import backend.service.CycleHistoryService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Optional;
@@ -43,5 +45,18 @@ public class CycleHistoryController {
     public Optional<CycleHistory> getCurrentCycle() {
         return cycleHistoryService.getCurrentCycle();
     }
+
+    @PostMapping("/{id}/confirm-start")
+    public ResponseEntity<CycleHistory> confirmPeriodStart(
+            @PathVariable Long id,
+            @RequestBody ConfirmPeriodStartRequest request
+    ) {
+
+        return cycleHistoryService
+                .confirmPeriodStart(id, request.actualStartDate())
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
     
 }
+
