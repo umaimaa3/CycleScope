@@ -47,6 +47,13 @@ public class CycleHistoryService {
             cycleHistory.setStatus(CycleStatus.WAITING_FOR_START_CONFIRMATION);
         }
 
+        if (
+            cycleHistory.getStatus() == CycleStatus.ACTIVE &&
+            !today.isBefore(cycleHistory.getPredictedEndDate())
+        ) {
+            cycleHistory.setStatus(CycleStatus.WAITING_FOR_END_CONFIRMATION);
+        }
+
         return cycleHistoryRepository.save(cycleHistory);
     }
 
@@ -74,7 +81,7 @@ public class CycleHistoryService {
                 .orElse(false);
     }
 
-    public Optional<CycleHistory> confirmPeriodStart(Long id, LocalDate actualStartDate) {
+    private Optional<CycleHistory> getCycleInStatus(Long id, CycleStatus expectedStatus) {
 
         Optional<CycleHistory> optionalCycle = cycleHistoryRepository.findById(id);
 
@@ -84,9 +91,26 @@ public class CycleHistoryService {
 
         CycleHistory cycle = optionalCycle.get();
 
-        if (cycle.getStatus() != CycleStatus.WAITING_FOR_START_CONFIRMATION) {
+        if (cycle.getStatus() != expectedStatus) {
             return Optional.empty();
         }
+
+        return Optional.of(cycle);
+    }
+
+    public Optional<CycleHistory> confirmPeriodStart(Long id, LocalDate actualStartDate) {
+
+        Optional<CycleHistory> optionalCycle =
+                getCycleInStatus(
+                        id,
+                        CycleStatus.WAITING_FOR_START_CONFIRMATION
+                );
+
+        if (optionalCycle.isEmpty()) {
+            return Optional.empty();
+        }
+
+        CycleHistory cycle = optionalCycle.get();
 
         cycle.setActualStartDate(actualStartDate);
 
@@ -102,7 +126,36 @@ public class CycleHistoryService {
         cycleHistoryRepository.save(cycle);
 
         return Optional.of(cycle);
+    }
 
+    public Optional<CycleHistory> confirmPeriodEnd(Long id, LocalDate actualEndDate) {
+
+        Optional<CycleHistory> optionalCycle =
+                getCycleInStatus(
+                        id,
+                        CycleStatus.WAITING_FOR_END_CONFIRMATION
+                );
+
+        if (optionalCycle.isEmpty()) {
+            return Optional.empty();
+        }
+
+        CycleHistory cycle = optionalCycle.get();
+
+        cycle.setActualEndDate(actualEndDate);
+
+        long periodLength = ChronoUnit.DAYS.between(
+                cycle.getActualStartDate(),
+                actualEndDate
+        ) + 1;
+
+        cycle.setActualPeriodLength((int) periodLength);
+
+        cycle.setStatus(CycleStatus.COMPLETED);
+
+        cycleHistoryRepository.save(cycle);
+
+        return Optional.of(cycle);
     }
 
     public void recordPredictedCycle(

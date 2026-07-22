@@ -1,6 +1,7 @@
 package backend.controller;
 
 import backend.model.CycleHistory;
+import backend.dto.ConfirmPeriodEndRequest;
 import backend.dto.ConfirmPeriodStartRequest;
 import backend.service.CycleHistoryService;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +28,7 @@ public class CycleHistoryController {
     @GetMapping("/{id}")
     public CycleHistory getCycleById(@PathVariable Long id) {
         return cycleHistoryService.getCycleById(id)
+                .map(cycleHistoryService::updateCycleStatus)
                 .orElse(null);
     }
 
@@ -54,6 +56,18 @@ public class CycleHistoryController {
 
         return cycleHistoryService
                 .confirmPeriodStart(id, request.actualStartDate())
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/{id}/confirm-end")
+    public ResponseEntity<CycleHistory> confirmPeriodEnd(
+            @PathVariable Long id,
+            @RequestBody ConfirmPeriodEndRequest request
+    ) {
+
+        return cycleHistoryService
+                .confirmPeriodEnd(id, request.actualEndDate())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
