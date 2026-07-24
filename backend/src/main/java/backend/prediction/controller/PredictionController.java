@@ -17,6 +17,6 @@ public class PredictionController {
 
     @GetMapping
     public CyclePredictionDTO getPrediction() {
-        return predictionService.calculatePrediction();
+        return predictionService.generateNextPrediction();
     }
 }

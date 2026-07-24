@@ -21,35 +21,73 @@ public class PredictionService {
         this.cycleHistoryService = cycleHistoryService;
     }
 
-    public CyclePredictionDTO calculatePrediction() {
+    private LocalDate findReferenceStartDate(CycleData cycleData) {
+        return LocalDate.parse(cycleData.getLastPeriod());
+    }
+
+    private int calculatePredictedCycleLength(CycleData cycleData) {
+        return cycleData.getCycleLength();
+    }
+
+    private int calculatePredictedPeriodLength(CycleData cycleData) {
+        return cycleData.getPeriodLength();
+    }
+
+    private LocalDate calculateNextPredictedStartDate(LocalDate referenceDate, LocalDate today, int predictedCycleLength) {
+        return PredictionEngine.calculateNextPeriod(
+            referenceDate,
+            today,
+            predictedCycleLength
+        );
+    }
+
+
+    private LocalDate calculatePredictedEndDate(LocalDate predictedStartDate, int predictedPeriodLength) {
+        return predictedStartDate.plusDays(predictedPeriodLength - 1);
+    }
+
+    public CyclePredictionDTO generateNextPrediction() {
 
         CycleData cycleData = cycleService.getCycleData();
 
-        int cycleLength = cycleData.getCycleLength();
-        int periodLength = cycleData.getPeriodLength();
+        int predictedCycleLength =
+        calculatePredictedCycleLength(cycleData);
 
-        LocalDate lastPeriod = LocalDate.parse(cycleData.getLastPeriod());
+        int predictedPeriodLength =
+                calculatePredictedPeriodLength(cycleData);
+
+        LocalDate referenceDate =
+                findReferenceStartDate(cycleData);
+
         LocalDate today = LocalDate.now();
 
-        long diffDays = ChronoUnit.DAYS.between(lastPeriod, today);
+        LocalDate predictedStartDate =
+            calculateNextPredictedStartDate(
+                    referenceDate,
+                    today,
+                    predictedCycleLength);
+
+        LocalDate predictedEndDate =
+            calculatePredictedEndDate(
+                    predictedStartDate,
+                    predictedPeriodLength);
+
+        long diffDays = ChronoUnit.DAYS.between(referenceDate, today);
 
         // Internal 0-based value
-        int cycleDayIndex = PredictionEngine.normalizeCycleDay((int) diffDays, cycleLength);
+        int cycleDayIndex = PredictionEngine.normalizeCycleDay((int) diffDays, predictedCycleLength);
         // User-facing 1-based value
         int cycleDay = cycleDayIndex + 1;
 
-        String phase = PredictionEngine.calculatePhase(cycleDayIndex, periodLength, cycleLength);
-
-        LocalDate nextPeriod = PredictionEngine.calculateNextPeriod(lastPeriod, today, cycleLength);
+        String phase = PredictionEngine.calculatePhase(cycleDayIndex, predictedPeriodLength, predictedCycleLength);
 
         // for cycleHistory
-        LocalDate predictedEndDate = nextPeriod.plusDays(periodLength - 1);
 
         cycleHistoryService.recordPredictedCycle(
-                nextPeriod,
+                predictedStartDate,
                 predictedEndDate,
-                cycleLength,
-                periodLength,
+                predictedCycleLength,
+                predictedPeriodLength,
                 70
         );
 
@@ -57,9 +95,9 @@ public class PredictionService {
                 cycleDayIndex,
                 cycleDay,
                 phase,
-                cycleLength,
-                periodLength,
-                nextPeriod
+                predictedCycleLength,
+                predictedPeriodLength,
+                predictedStartDate
         );
     }
 }
