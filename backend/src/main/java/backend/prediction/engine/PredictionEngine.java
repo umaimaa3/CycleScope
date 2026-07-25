@@ -23,14 +23,7 @@ public class PredictionEngine {
         }
     }
 
-    public static LocalDate calculateNextPeriod(LocalDate lastPeriod, LocalDate today, int cycleLength) {
-
-        LocalDate next = lastPeriod;
-
-        while (!next.isAfter(today)) {
-            next = next.plusDays(cycleLength);
-        }
-
-        return next;
+    public static LocalDate calculateNextPeriod(LocalDate referenceStartDate, int cycleLength) {
+        return referenceStartDate.plusDays(cycleLength);
     }
 }

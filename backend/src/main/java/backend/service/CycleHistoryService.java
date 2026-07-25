@@ -1,5 +1,6 @@
 package backend.service;
 
+import backend.model.CycleData;
 import backend.model.CycleHistory;
 import backend.model.CycleStatus;
 import backend.repository.CycleHistoryRepository;
@@ -10,6 +11,7 @@ import java.util.Optional;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Comparator;
 
 @Service
 public class CycleHistoryService {
@@ -68,6 +70,16 @@ public class CycleHistoryService {
         return Optional.of(updateCycleStatus(currentCycle.get()));
     }
 
+    public Optional<CycleHistory> getNextCycle(CycleHistory currentCycle) {
+
+        return getAllCycles()
+                .stream()
+                .filter(cycle ->
+                        cycle.getCycleNumber() > currentCycle.getCycleNumber()
+                )
+                .findFirst();
+    }
+
     private int getNextCycleNumber() {
         return getLatestCycle()
                 .map(cycle -> cycle.getCycleNumber() + 1)
@@ -79,6 +91,51 @@ public class CycleHistoryService {
         return getLatestCycle()
                 .map(cycle -> cycle.getPredictedStartDate().equals(predictedStartDate))
                 .orElse(false);
+    }
+
+    public Optional<CycleHistory> getCurrentRelevantCycle() {
+
+        LocalDate today = LocalDate.now();
+
+        List<CycleHistory> cycles = getAllCycles();
+
+        cycles.sort(
+                Comparator.comparing(CycleHistory::getPredictedStartDate)
+        );
+
+        for (int i = 0; i < cycles.size(); i++) {
+
+            CycleHistory current = cycles.get(i);
+
+            LocalDate currentStart =
+                    current.getActualStartDate() != null
+                            ? current.getActualStartDate()
+                            : current.getPredictedStartDate();
+
+            LocalDate nextStart = null;
+
+            if (i + 1 < cycles.size()) {
+
+                CycleHistory next = cycles.get(i + 1);
+
+                nextStart =
+                        next.getActualStartDate() != null
+                                ? next.getActualStartDate()
+                                : next.getPredictedStartDate();
+            }
+
+            boolean afterCurrentStart =
+                    !today.isBefore(currentStart);
+
+            boolean beforeNextStart =
+                    nextStart == null || today.isBefore(nextStart);
+
+            if (afterCurrentStart && beforeNextStart) {
+                return Optional.of(current);
+            }
+        }
+
+        return Optional.empty();
     }
 
     private Optional<CycleHistory> getCycleInStatus(Long id, CycleStatus expectedStatus) {
