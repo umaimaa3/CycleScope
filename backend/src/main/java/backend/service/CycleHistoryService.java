@@ -38,38 +38,6 @@ public class CycleHistoryService {
         return cycleHistoryRepository.findTopByOrderByCycleNumberDesc();
     }
 
-    public CycleHistory updateCycleStatus(CycleHistory cycleHistory) {
-
-        LocalDate today = LocalDate.now();
-
-        if (
-            cycleHistory.getStatus() == CycleStatus.PREDICTED &&
-            !today.isBefore(cycleHistory.getPredictedStartDate())
-        ) {
-            cycleHistory.setStatus(CycleStatus.WAITING_FOR_START_CONFIRMATION);
-        }
-
-        if (
-            cycleHistory.getStatus() == CycleStatus.ACTIVE &&
-            !today.isBefore(cycleHistory.getPredictedEndDate())
-        ) {
-            cycleHistory.setStatus(CycleStatus.WAITING_FOR_END_CONFIRMATION);
-        }
-
-        return cycleHistoryRepository.save(cycleHistory);
-    }
-
-    public Optional<CycleHistory> getCurrentCycle() {
-
-        Optional<CycleHistory> currentCycle = getLatestCycle();
-
-        if (currentCycle.isEmpty()) {
-            return Optional.empty();
-        }
-
-        return Optional.of(updateCycleStatus(currentCycle.get()));
-    }
-
     public Optional<CycleHistory> getNextCycle(CycleHistory currentCycle) {
 
         return getAllCycles()
@@ -86,11 +54,16 @@ public class CycleHistoryService {
                 .orElse(1);
     }
 
-    private boolean predictionAlreadyExists(LocalDate predictedStartDate) {
+    // TODO: REMOVE
+    public Optional<CycleHistory> getCurrentCycle() {
 
-        return getLatestCycle()
-                .map(cycle -> cycle.getPredictedStartDate().equals(predictedStartDate))
-                .orElse(false);
+        Optional<CycleHistory> currentCycle = getLatestCycle();
+
+        if (currentCycle.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(updateCycleStatus(currentCycle.get()));
     }
 
     public Optional<CycleHistory> getCurrentRelevantCycle() {
@@ -131,7 +104,7 @@ public class CycleHistoryService {
                     nextStart == null || today.isBefore(nextStart);
 
             if (afterCurrentStart && beforeNextStart) {
-                return Optional.of(current);
+                return Optional.of(updateCycleStatus(current));
             }
         }
 
@@ -153,6 +126,54 @@ public class CycleHistoryService {
         }
 
         return Optional.of(cycle);
+    }
+
+    public CycleStatus determineStatus(CycleHistory cycle) {
+
+        LocalDate today = LocalDate.now();
+
+        // Cycle has not started yet
+        if (today.isBefore(cycle.getPredictedStartDate())) {
+            return CycleStatus.PREDICTED;
+        }
+
+        // User has entered the cycle but has not confirmed the start
+        if (cycle.getActualStartDate() == null) {
+            return CycleStatus.WAITING_FOR_START_CONFIRMATION;
+        }
+
+        // User confirmed the start, but not the end
+        if (cycle.getActualEndDate() == null) {
+
+            if (today.isBefore(cycle.getPredictedEndDate())) {
+                return CycleStatus.ACTIVE;
+            }
+
+            return CycleStatus.WAITING_FOR_END_CONFIRMATION;
+        }
+
+        // Both start and end have been confirmed.
+        // TODO: Later we'll determine when this should become COMPLETED.
+        return CycleStatus.ACTIVE;
+    }
+
+    public CycleHistory updateCycleStatus(CycleHistory cycle) {
+
+        CycleStatus newStatus = determineStatus(cycle);
+
+        if (cycle.getStatus() != newStatus) {
+            cycle.setStatus(newStatus);
+            cycleHistoryRepository.save(cycle);
+        }
+
+        return cycle;
+    }
+
+    private boolean predictionAlreadyExists(LocalDate predictedStartDate) {
+
+        return getLatestCycle()
+                .map(cycle -> cycle.getPredictedStartDate().equals(predictedStartDate))
+                .orElse(false);
     }
 
     public Optional<CycleHistory> confirmPeriodStart(Long id, LocalDate actualStartDate) {
@@ -178,7 +199,7 @@ public class CycleHistoryService {
 
         cycle.setPredictionErrorDays((int) error);
 
-        cycle.setStatus(CycleStatus.ACTIVE);
+        cycle.setStatus(determineStatus(cycle)); 
 
         cycleHistoryRepository.save(cycle);
 
@@ -208,7 +229,7 @@ public class CycleHistoryService {
 
         cycle.setActualPeriodLength((int) periodLength);
 
-        cycle.setStatus(CycleStatus.COMPLETED);
+        cycle.setStatus(determineStatus(cycle));
 
         cycleHistoryRepository.save(cycle);
 
@@ -235,6 +256,8 @@ public class CycleHistoryService {
                 confidence
         );
 
+        cycleHistory.setStatus(determineStatus(cycleHistory));
+        
         saveCycleHistory(cycleHistory);
     }
 

@@ -44,8 +44,9 @@ public class CycleHistoryController {
     }
 
     @GetMapping("/current")
-    public Optional<CycleHistory> getCurrentCycle() {
-        return cycleHistoryService.getCurrentCycle();
+    public CycleHistory getCurrentRelevantCycle() {
+        return cycleHistoryService.getCurrentRelevantCycle()
+                .orElse(null);
     }
 
     @PostMapping("/{id}/confirm-start")
