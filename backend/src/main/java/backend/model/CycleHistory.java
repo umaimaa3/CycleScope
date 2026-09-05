@@ -13,36 +13,60 @@ import jakarta.persistence.Enumerated;
 @Entity 
 public class CycleHistory {
 
+    // Primary key used to uniquely identify each historical cycle record
+    // The database automatically generates the ID when a record is created
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Represents where this cycle currently is in the prediction/confirmation
+    // lifecycle. The initial state is PREDICTED.
+    //
+    // EnumType.STRING stores the enum name (eg. "PREDICTED") in the database
+    // rather than its numeric position, making the stored value more readable
+    // and safer if the enum order changes
     @Enumerated(EnumType.STRING)
     private CycleStatus status = CycleStatus.PREDICTED;
 
+    // Identifies the cycle's position in the user's historical sequence
     private int cycleNumber;
 
+    // Values predicted by CycleScope for when the user's period will start and end
+    // These remain separate from actual dates so predictions can later be evaluated
     private LocalDate predictedStartDate;
     private LocalDate actualStartDate;
 
+    // Dates supplied or confirmed by the user once the actual cycle events are known
+    // These are kept separate from predictions because predictions must never
+    // overwrite user-confirmed observations
     private LocalDate predictedEndDate;
     private LocalDate actualEndDate;
 
+    // Predicted length of the entire cycle and the predicted length of the period
     private int predictedCycleLength;
     private Integer actualCycleLength;
 
+    // Actual cycle and period lengths once enough user-confirmed information exists
+    // Integer is used so these fields can be null while the values are still unknown
     private int predictedPeriodLength;
     private Integer actualPeriodLength;
 
+    // Difference between the predicted and actual cycle timing, calculated once
+    // actual information becomes available
     private Integer predictionErrorDays;
+
+    // Confidence associated with the prediction
     private Integer confidence;
     
+    // Timestamps used to track when the historical record was created and last updated
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public CycleHistory() {
     }
 
+    // Creates a new historical record containing the initial prediction
+    // Actual values remain empty until the user provides observations
     public CycleHistory(int cycleNumber, LocalDate predictedStartDate, LocalDate predictedEndDate,
         int predictedCycleLength, int predictedPeriodLength, Integer confidence) {
 
